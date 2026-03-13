@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prestamos Baute PRO xd</title>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #a0e0ff, #f0f8ff);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    h1 {
+        color: green;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    button {
+        background-color: #ffeb3b;
+        border: none;
+        padding: 15px 25px;
+        margin: 10px;
+        font-size: 18px;
+        cursor: pointer;
+        border-radius: 15px;
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        transition: 0.3s;
+        width: 250px;
+    }
+
+    button:hover {
+        background-color: #ffc107;
+    }
+
+    #historial, #dashboard {
+        margin-top: 20px;
+        text-align: left;
+        background: #ffffffcc;
+        padding: 15px;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 400px;
+        max-height: 250px;
+        overflow-y: auto;
+        box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+    }
+
+    input {
+        padding: 10px;
+        margin: 5px;
+        width: 90%;
+        max-width: 300px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+    }
+
+    .hidden {
+        display: none;
+    }
+</style>
+</head>
+<body>
+
+<h1>Hola bro, Bienvenido a Prestamos Baute PRO xd</h1>
+
+<div id="auth">
+    <h3>Registrarse</h3>
+    <input type="text" id="regUser" placeholder="Nombre de usuario"><br>
+    <input type="password" id="regPass" placeholder="Contraseña"><br>
+    <button onclick="registrarse()">Registrarse xd</button>
+
+    <h3>Iniciar sesión</h3>
+    <input type="text" id="loginUser" placeholder="Nombre de usuario"><br>
+    <input type="password" id="loginPass" placeholder="Contraseña"><br>
+    <button onclick="iniciarSesion()">Iniciar sesión xd</button>
+</div>
+
+<div id="dashboard" class="hidden">
+    <button onclick="pedirPlata()">Quiero plata xd 💸</button>
+    <button onclick="verTotal()">Queiro saber cuanto me has dado 💰</button>
+    <button onclick="verHistorial()">Historial de prestamos 📜</button>
+    <button onclick="cerrarSesion()">Cerrar sesión ❌</button>
+    <div id="historial"></div>
+</div>
+
+<script>
+// Cargar usuarios y prestamos desde localStorage
+let usuarios = JSON.parse(localStorage.getItem('usuariosBaute')) || [];
+let prestamos = JSON.parse(localStorage.getItem('prestamosBaute')) || [];
+let usuarioActual = null;
+
+// Guardar en localStorage
+function guardarUsuarios() {
+    localStorage.setItem('usuariosBaute', JSON.stringify(usuarios));
+}
+
+function guardarPrestamos() {
+    localStorage.setItem('prestamosBaute', JSON.stringify(prestamos));
+}
+
+// Registro
+function registrarse() {
+    let user = document.getElementById('regUser').value.trim();
+    let pass = document.getElementById('regPass').value;
+    if(!user || !pass){
+        alert("Escribe usuario y contraseña xd");
+        return;
+    }
+    if(usuarios.some(u => u.user === user)){
+        alert("Ese usuario ya existe bro xd");
+        return;
+    }
+    usuarios.push({user, pass});
+    guardarUsuarios();
+    alert("Registrado bro xd! Ahora inicia sesión");
+}
+
+// Inicio de sesión
+function iniciarSesion() {
+    let user = document.getElementById('loginUser').value.trim();
+    let pass = document.getElementById('loginPass').value;
+    let u = usuarios.find(u => u.user === user && u.pass === pass);
+    if(u){
+        usuarioActual = user;
+        document.getElementById('auth').classList.add('hidden');
+        document.getElementById('dashboard').classList.remove('hidden');
+        mostrarHistorial();
+    } else {
+        alert("Usuario o contraseña incorrecta xd");
+    }
+}
+
+// Cerrar sesión
+function cerrarSesion(){
+    usuarioActual = null;
+    document.getElementById('auth').classList.remove('hidden');
+    document.getElementById('dashboard').classList.add('hidden');
+    document.getElementById('historial').innerHTML = "";
+}
+
+// Pedir plata
+function pedirPlata() {
+    if(!usuarioActual) return;
+    let cantidad = parseFloat(prompt("Aja, cuanto quieres bro?"));
+    if(!isNaN(cantidad) && cantidad>0){
+        let interes = (cantidad*0.05).toFixed(2);
+        let fecha = new Date().toLocaleString();
+        prestamos.push({user:usuarioActual, cantidad, interes, fecha});
+        guardarPrestamos();
+        alert(`Prestamo agregado bro! Interes: ${interes}`);
+        mostrarHistorial();
+    } else {
+        alert("Debes escribir un numero valido xd");
+    }
+}
+
+// Ver total
+function verTotal(){
+    if(!usuarioActual) return;
+    let total = prestamos
+        .filter(p=>p.user===usuarioActual)
+        .reduce((acc,p)=>acc + p.cantidad + parseFloat(p.interes),0);
+    alert(`Total prestado (con intereses): ${total}`);
+}
+
+// Ver historial
+function verHistorial(){
+    mostrarHistorial();
+}
+
+function mostrarHistorial(){
+    if(!usuarioActual) return;
+    let html = "";
+    let userPrestamos = prestamos.filter(p=>p.user===usuarioActual);
+    if(userPrestamos.length===0){
+        html = "No hay prestamos aun bro :(";
+    } else {
+        userPrestamos.forEach((p,i)=>{
+            html += `${i+1}. ${p.cantidad} xd (Interes: ${p.interes}) - ${p.fecha}<br>`;
+        });
+    }
+    document.getElementById('historial').innerHTML = html;
+}
+</script>
+
+</body>
+</html>
